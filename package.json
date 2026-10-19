@@ -1,1 +1,28 @@
-{"author":"Subhan Malik","bin":{"ssg":"./bin/ssg"},"description":"A fast, dependency-free incremental static site generator — markdown with front matter, layouts and partials, asset pipeline, watch mode and a dev server.","devDependencies":{"jest":"^29.7.0"},"engines":{"node":">=18"},"keywords":["static-site","markdown","ssg","generator"],"license":"MIT","main":"src/index.js","name":"js-static-site-generator","scripts":{"start":"bin/ssg","test":"jest"},"type":"commonjs","version":"1.0.0"}
+{
+  "author": "Subhan Malik",
+  "bin": {
+    "ssg": "./cli/ssg"
+  },
+  "description": "A fast, dependency-free incremental static site generator \u2014 markdown with front matter, layouts and partials, asset pipeline, watch mode and a dev server.",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "static-site",
+    "markdown",
+    "ssg",
+    "generator"
+  ],
+  "license": "MIT",
+  "main": "src/index.js",
+  "name": "js-static-site-generator",
+  "scripts": {
+    "start": "cli/ssg",
+    "test": "jest"
+  },
+  "type": "commonjs",
+  "version": "1.0.0"
+}

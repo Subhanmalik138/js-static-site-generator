@@ -1,0 +1,111 @@
+#!/usr/bin/env node
+
+'use strict';
+
+const path = require('path');
+const fs = require('fs');
+const { loadConfig } = require('../src/config');
+const { build } = require('../src/builder');
+const { watch } = require('../src/watch');
+const { serve } = require('../src/server');
+const { init } = require('../src/init');
+
+function usage() {
+  console.log(`ssg — a tiny incremental static site generator
+
+Usage:
+  ssg init [dir]          scaffold a starter site (default: current directory)
+  ssg build [--force]     build the site into the output directory
+  ssg watch               rebuild automatically when sources change
+  ssg serve [--port N]    build, watch, and serve with live reload (default port 3000)
+  ssg clean               remove the output directory and build cache`);
+}
+
+function flag(args, name) {
+  const i = args.indexOf(name);
+  if (i === -1) return null;
+  const next = args[i + 1];
+  return next && !next.startsWith('--') ? next : true;
+}
+
+async function cmdBuild(config, args) {
+  const stats = build(config, { force: flag(args, '--force') === true });
+  console.log(`built ${stats.built} page(s), skipped ${stats.skipped} unchanged, copied ${stats.assets} asset(s)`);
+}
+
+async function cmdServe(config, args) {
+  const port = parseInt(flag(args, '--port') || '3000', 10);
+  const watcher = watch(config);
+  const { port: actual } = await serve(config.paths.output, {
+    port,
+    liveReload: true,
+    getBuildId: () => watcher.buildId,
+  });
+  console.log(`serving ${config.paths.output} at http://localhost:${actual} (live reload on)`);
+  process.on('SIGINT', () => {
+    watcher.stop();
+    process.exit(0);
+  });
+}
+
+async function cmdWatch(config) {
+  console.log('watching for changes… (Ctrl+C to stop)');
+  const watcher = watch(config);
+  process.on('SIGINT', () => {
+    watcher.stop();
+    process.exit(0);
+  });
+}
+
+async function cmdClean(config) {
+  for (const dir of [config.paths.output, path.dirname(config.paths.cache)]) {
+    if (fs.existsSync(dir)) {
+      fs.rmSync(dir, { recursive: true, force: true });
+      console.log(`removed ${dir}`);
+    }
+  }
+}
+
+async function main() {
+  const [cmd, ...args] = process.argv.slice(2);
+
+  if (!cmd || cmd === '--help' || cmd === '-h' || cmd === 'help') {
+    usage();
+    return;
+  }
+
+  if (cmd === 'init') {
+    // Positional target = first arg that is not a flag and not a flag's value.
+    let target = '.';
+    for (let i = 0; i < args.length; i += 1) {
+      const a = args[i];
+      if (a === '--name') {
+        i += 1; // skip the name value
+      } else if (!a.startsWith('--')) {
+        target = a;
+      }
+    }
+    const name = flag(args, '--name') || 'My Site';
+    const root = init(target, String(name));
+    console.log(`scaffolded a new site in ${root}\nrun "cd ${path.relative(process.cwd(), root) || '.'} && ssg build" to build it`);
+    return;
+  }
+
+  const config = loadConfig(process.cwd());
+
+  switch (cmd) {
+    case 'build': return cmdBuild(config, args);
+    case 'watch': return cmdWatch(config);
+    case 'serve': return cmdServe(config, args);
+    case 'clean': return cmdClean(config);
+    default:
+      console.error(`unknown command: ${cmd}\n`);
+      usage();
+      process.exit(1);
+  }
+}
+
+main().catch((err) => {
+  console.error(`error: ${err.message}`);
+  process.exit(1);
+});

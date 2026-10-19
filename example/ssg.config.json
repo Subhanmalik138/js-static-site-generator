@@ -1,0 +1,12 @@
+{
+  "contentDir": "content",
+  "layoutDir": "layouts",
+  "assetDir": "assets",
+  "outputDir": "public",
+  "defaultLayout": "default",
+  "site": {
+    "title": "Example Blog",
+    "description": "A site built with ssg",
+    "author": ""
+  }
+}
