@@ -23,13 +23,15 @@ function renderInline(text) {
   out = out.replace(/`([^`]+)`/g, (_, code) => `<code>${code}</code>`);
 
   // Images before links so the leading ! is consumed correctly.
-  out = out.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g,
+  // Note: quotes were already escaped to &quot; above, so titles are
+  // matched in their escaped form.
+  out = out.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+&quot;(.*?)&quot;)?\)/g,
     (_, alt, src, title) =>
       title
         ? `<img src="${src}" alt="${alt}" title="${title}">`
         : `<img src="${src}" alt="${alt}">`);
 
-  out = out.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g,
+  out = out.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+&quot;(.*?)&quot;)?\)/g,
     (_, label, href, title) =>
       title
         ? `<a href="${href}" title="${title}">${label}</a>`
